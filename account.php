@@ -34,6 +34,23 @@ if (isset($_GET['delete_address']) && is_numeric($_GET['delete_address'])) {
     exit();
 }
 
+// Cancel order
+if (isset($_GET['cancel']) && is_numeric($_GET['cancel'])) {
+    $cancelId = intval($_GET['cancel']);
+
+    // Only cancel if order is still pending
+    $cancelStmt = $conn->prepare("UPDATE orders SET status = 'Cancelled' WHERE id = ? AND user_id = ? AND status = 'Pending'");
+    $cancelStmt->bind_param("ii", $cancelId, $userId);
+    $cancelStmt->execute();
+    $cancelStmt->close();
+
+    // Store session to show confirmation
+    $_SESSION['cancel_success'] = true;
+
+    header("Location: account.php");
+    exit();
+}
+
 // Save address
 if (isset($_POST['save_address'])) {
     $addressId     = intval($_POST['address_id'] ?? 0);
@@ -125,6 +142,14 @@ foreach ($orderStatuses as $status) {
     <a href="change_password.php" class="btn btn-sm btn-outline-warning mt-2">🔒 Change Password</a>
   </div>
 </div>
+
+<?php if (isset($_SESSION['cancel_success'])): ?>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    ✅ Order successfully canceled!
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  <?php unset($_SESSION['cancel_success']); ?>
+<?php endif; ?>
 
 
 
@@ -273,31 +298,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Load JSON for cascading location dropdowns
 
-  
-  // fetch('assets/data/location.json')
-  //   .then(res => res.json())
-  //   .then(data => {
-  //     const regionSelect = document.getElementById("region");
-  //     const provinceSelect = document.getElementById("province");
-  //     const citySelect = document.getElementById("city");
-  //     const barangaySelect = document.getElementById("barangay");
 
-  //     function populate(select, items, selected = "") {
-  //       select.innerHTML = '<option value="">Select</option>';
-  //       items.forEach(i => {
-  //         const opt = document.createElement("option");
-  //         opt.value = i;
-  //         opt.text = i;
-  //         if (i === selected) opt.selected = true;
-  //         select.appendChild(opt);
-  //       });
-  //     }
+  fetch('assets/data/location.json')
+    .then(res => res.json())
+    .then(data => {
+      const regionSelect = document.getElementById("region");
+      const provinceSelect = document.getElementById("province");
+      const citySelect = document.getElementById("city");
+      const barangaySelect = document.getElementById("barangay");
+
+      function populate(select, items, selected = "") {
+        select.innerHTML = '<option value="">Select</option>';
+        items.forEach(i => {
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.text = i;
+          if (i === selected) opt.selected = true;
+          select.appendChild(opt);
+        });
+     }
 
 
 
       const regions = Object.entries(data).map(([code, r]) => ({
         code: code,
-        name: r.region_name
+        na me: r.region_name
       }));
 
       populate(regionSelect, regions.map(r => r.name), currentRegion);

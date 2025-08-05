@@ -1,0 +1,7 @@
+git init -> Finding file
+git add . -> select file (rx_gadgets)
+git commit -am "Lagay mo kung ano inupdate mo" -> Update lines code 
+git push origin main -> diretso sa github portfolio mo
+git pull origin main -> Back to normal
+git remote add origin "Respiratory file mo sa github" 
+git push origin (branch mo) - update to date
